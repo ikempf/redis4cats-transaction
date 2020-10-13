@@ -24,15 +24,13 @@ class OptimisticLockTest extends AnyFlatSpec with Matchers {
   private val logger       = Slf4jLogger.getLogger[IO]
   implicit private val log = log4CatsInstance(logger)
 
-  private val redisURI     = "redis://localhost:6379/2"
-  private val mkRedis      = RedisClient[IO].from(redisURI)
+  private val redisURI    = "redis://localhost:6379/2"
+  private val mkRedis     = RedisClient[IO].from(redisURI)
+  private val Parallelism = 100
+
   private val testKey      = "test-key"
   private val InitialValue = "a"
   private val UpdatedValue = "b"
-  private val Parallelism  = 100
-
-  private def commands(client: RedisClient): Resource[IO, RedisCommands[IO, String, String]] =
-    Redis[IO].fromClient(client, RedisCodec.Ascii)
 
   "Optimistic lock" should "allow single update" in {
     mkRedis
@@ -80,5 +78,8 @@ class OptimisticLockTest extends AnyFlatSpec with Matchers {
         case Some(_)            => Left("Unexpected value")
         case None               => Right(())
       }
+
+  private def commands(client: RedisClient): Resource[IO, RedisCommands[IO, String, String]] =
+    Redis[IO].fromClient(client, RedisCodec.Ascii)
 
 }
